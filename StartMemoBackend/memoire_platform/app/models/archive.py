@@ -1,0 +1,22 @@
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+from app.database import Base
+
+class Archive(Base):
+    __tablename__ = "archives"
+
+    id = Column(Integer, primary_key=True)
+    memoire_id = Column(Integer, ForeignKey("memoires.id"), unique=True)
+    titre = Column(String(500))
+    auteur_nom = Column(String(200))
+    annee_soutenance = Column(Integer)
+    filiere = Column(String(100))
+    domaine = Column(String(100))
+    mots_cles = Column(Text)
+    resume = Column(Text)
+    chemin_fichier = Column(String(500))
+    acces_public = Column(Boolean, default=False)
+    archive_le = Column(DateTime, default=func.now())
+
+    memoire = relationship("Memoire")

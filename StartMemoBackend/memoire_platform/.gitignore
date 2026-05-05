@@ -1,0 +1,22 @@
+# Environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDEs
+.vscode/
+.idea/
+
+# Exceptions :
+# On NE met PAS .env dans le gitignore pour que l'équipe ait accès à la BDD directement !
+
+# Fichiers de configuration / instructions locales
+PANA_Elissam_Leroy_Instructions_Jour1.md
+../PANA_Elissam_Leroy_Instructions_Jour1.md
