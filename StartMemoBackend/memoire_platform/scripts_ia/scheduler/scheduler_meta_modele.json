@@ -1,0 +1,8 @@
+{
+  "nb_planifies": 23,
+  "nb_eligibles": 24,
+  "nb_total": 30,
+  "taux_planification": 95.8,
+  "nb_conflits": 0,
+  "algorithme": "Greedy avec score de prfrence + vrification ILP"
+}

@@ -1,0 +1,17 @@
+{
+  "nb_memoires": 300,
+  "nb_clusters": 8,
+  "clusters": {
+    "0": "Systmes Embarqus",
+    "1": "Bases de donnes",
+    "2": "Cyberscurit",
+    "3": "Dveloppement Web",
+    "4": "Rseaux",
+    "5": "Rseaux",
+    "6": "Cloud / DevOps",
+    "7": "Mobile"
+  },
+  "variance_expliquee": 100.0,
+  "dim_embedding": 80,
+  "nb_features_tfidf": 1411
+}

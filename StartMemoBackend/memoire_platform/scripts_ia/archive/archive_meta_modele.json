@@ -1,0 +1,17 @@
+{
+  "nb_memoires": 300,
+  "nb_clusters": 8,
+  "clusters": {
+    "0": "Développement Web",
+    "1": "Cloud / DevOps",
+    "2": "Mobile",
+    "3": "Systèmes Embarqués",
+    "4": "Cybersécurité",
+    "5": "Systèmes Embarqués",
+    "6": "Cybersécurité",
+    "7": "Bases de données"
+  },
+  "variance_expliquee": 100.0,
+  "dim_embedding": 80,
+  "nb_features_tfidf": 1412
+}

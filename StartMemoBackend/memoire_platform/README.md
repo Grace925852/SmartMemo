@@ -76,4 +76,29 @@ from app.models import Etudiant, Memoire, User
 Des schémas de base ont été créés dans `app/schemas/` pour la validation des données d'entrée/sortie (`UserOut`, `EtudiantCreate`, etc.). N'hésitez pas à les enrichir selon les besoins de vos routes API.
 
 ---
-**Bon développement à tous pour le Jour 2 !**
+
+## 🧠 Modules d'Intelligence Artificielle (Nouveau)
+
+Le projet intègre désormais une suite de 7 modules IA pour automatiser le parcours académique. Les modèles sont chargés automatiquement au démarrage du serveur grâce au système de `lifespan`.
+
+### État des modèles
+- **4 Modèles ML Entraînés** : AntiPlagiat (82% acc), Approval (Approbation), Submission (Readiness), Archive (Clustering).
+- **3 Moteurs de Logique** : Recommandation (Sémantique), Assignment (Scoring), Scheduler (Optimisation).
+
+### Structure IA
+- `ia_models/` : Centralise tous les fichiers modèles (`.pkl`) et les métadonnées de performance (`.json`).
+- `app/services/ia/` : Services Python assurant l'interface entre l'API et les modèles IA.
+- `scripts_ia/` : Scripts sources pour **re-générer les données ou ré-entraîner** les modèles en cas de mise à jour.
+
+### Utilisation (API)
+Toutes les fonctionnalités sont exposées via les nouvelles routes dans `app/api/v1/` :
+- `POST /memoires/{id}/analyser-plagiat` : Détection de fraude sémantique.
+- `POST /sujets/analyser` : Prédiction de la probabilité d'approbation d'un thème.
+- `POST /soutenances/generer-planning` : Optimisation automatique des créneaux de soutenance.
+
+⚠️ **Important pour l'équipe** :
+1.  Relancez `pip install -r requirements.txt` pour installer les librairies de Machine Learning.
+2.  Assurez-vous que le dossier `ia_models/` contient bien les fichiers `.pkl` générés.
+
+---
+**Bon développement à tous pour la suite du projet !**
