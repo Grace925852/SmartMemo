@@ -1,7 +1,7 @@
 from datetime import datetime
-# app/models/version_memoire.py
-
+import uuid
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -10,7 +10,7 @@ from app.database import Base
 class VersionMemoire(Base):
     """
     Chaque dépôt d'un fichier crée une nouvelle ligne ici.
-    
+
     Exemple :
       - Version 1 : fichier_v1.pdf, déposé le 01/06/2025
       - Version 2 : fichier_v2.pdf, déposé le 15/06/2025 (après corrections)
@@ -19,29 +19,28 @@ class VersionMemoire(Base):
     __tablename__ = "versions_memoire"
 
     # --- Identifiant ---
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
     # --- Lien vers le mémoire parent ---
-    memoire_id = Column(Integer, ForeignKey("memoires.id"), nullable=False)
+    memoire_id = Column(UUID(as_uuid=True), ForeignKey("memoires.id"), nullable=False)
 
     # --- Numéro de version (1, 2, 3 ...) ---
-    # Calculé automatiquement dans le service (pas en BDD directement)
     numero_version = Column(Integer, nullable=False, default=1)
 
     # --- Fichier déposé ---
-    nom_fichier_original = Column(String(255), nullable=False)  # "mon_memoire_final.pdf"
-    nom_fichier_stocke   = Column(String(255), nullable=False)  # "memoire_3_v2_1717430400.pdf"
-    chemin_fichier       = Column(String(500), nullable=False)  # "uploads/memoires/..."
-    taille_fichier_ko    = Column(Integer, nullable=True)       # Taille en kilo-octets
+    nom_fichier_original = Column(String(255), nullable=False)
+    nom_fichier_stocke   = Column(String(255), nullable=False)
+    chemin_fichier       = Column(String(500), nullable=False)
+    taille_fichier_ko    = Column(Integer, nullable=True)
 
     # --- Message accompagnant le dépôt ---
-    message_depot = Column(Text, nullable=True)  # "Corrections chapitre 3 effectuées"
+    message_depot = Column(Text, nullable=True)
 
     # --- Indique si c'est la version actuellement active ---
     est_version_courante = Column(Boolean, default=True, nullable=False)
 
-    # --- Qui a déposé (toujours l'étudiant, mais on garde la trace) ---
-    depose_par_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    # --- Qui a déposé ---
+    depose_par_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
 
     # --- Timestamp ---
     depose_le = Column(DateTime(timezone=True), default=datetime.utcnow)

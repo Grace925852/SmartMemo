@@ -1,7 +1,7 @@
 from datetime import datetime
-# app/models/memoire.py
-
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum
+import uuid
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Enum
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
@@ -21,7 +21,7 @@ class StatutMemoire(str, enum.Enum):
 class Memoire(Base):
     __tablename__ = "memoires"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     titre = Column(String(300), nullable=False)
     description = Column(Text, nullable=True)
     domaine = Column(String(100), nullable=True)
@@ -33,8 +33,8 @@ class Memoire(Base):
         nullable=False
     )
 
-    etudiant_id = Column(Integer, ForeignKey("etudiants.id"), nullable=False)
-    encadreur_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    etudiant_id = Column(UUID(as_uuid=True), ForeignKey("etudiants.id"), nullable=False)
+    encadreur_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
 
     cree_le = Column(DateTime(timezone=True), default=datetime.utcnow)
     mis_a_jour_le = Column(DateTime(timezone=True), onupdate=func.now())

@@ -18,6 +18,8 @@ from app.models.memoire import StatutMemoire
 import app.services.memoire_service as service
 from app.services.ia.antiplagiat_service import analyser_plagiat
 from app.services.ia.submission_service import predire_readiness
+from app.api.deps import RoleChecker, get_current_active_user
+from app.models.user import User
 
 # ─────────────────────────────────────────────
 # INITIALISATION DU ROUTER
@@ -49,8 +51,8 @@ async def deposer_memoire(
     annee_academique: Optional[str] = Form(None, description="Ex: 2024-2025"),
     message_depot: Optional[str] = Form(None, description="Message accompagnant le dépôt"),
     fichier: UploadFile = File(..., description="Fichier PDF du mémoire (max 20 Mo)"),
-    etudiant_id: int = Form(..., description="ID de l'étudiant (temporaire, sera remplacé par JWT)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(RoleChecker(["etudiant", "admin"]))
 ):
     donnees = MemoireCreer(
         titre=titre,
@@ -59,7 +61,7 @@ async def deposer_memoire(
         annee_academique=annee_academique,
         message_depot=message_depot
     )
-    return service.creer_memoire_et_deposer(db, donnees, fichier, etudiant_id)
+    return service.creer_memoire_et_deposer(db, donnees, fichier, current_user.id)
 
 
 @router.post(
@@ -77,10 +79,10 @@ async def deposer_nouvelle_version(
     memoire_id: int,
     message_depot: Optional[str] = Form(None, description="Description des modifications apportées"),
     fichier: UploadFile = File(..., description="Nouveau fichier PDF"),
-    etudiant_id: int = Form(..., description="ID de l'étudiant (temporaire)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(RoleChecker(["etudiant"]))
 ):
-    return service.deposer_nouvelle_version(db, memoire_id, fichier, etudiant_id, message_depot)
+    return service.deposer_nouvelle_version(db, memoire_id, fichier, current_user.id, message_depot)
 
 
 @router.get(
@@ -90,7 +92,8 @@ async def deposer_nouvelle_version(
 )
 def obtenir_memoire(
     memoire_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(RoleChecker(["admin", "encadreur", "etudiant", "jury"]))
 ):
     return service.obtenir_memoire_par_id(db, memoire_id)
 
@@ -102,7 +105,8 @@ def obtenir_memoire(
 )
 def lister_memoires_etudiant(
     etudiant_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(RoleChecker(["admin", "encadreur", "etudiant"]))
 ):
     return service.lister_memoires_etudiant(db, etudiant_id)
 
@@ -114,7 +118,8 @@ def lister_memoires_etudiant(
 )
 def historique_versions(
     memoire_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(RoleChecker(["etudiant", "encadreur", "admin", "jury"]))
 ):
     return service.lister_historique_versions(db, memoire_id)
 
@@ -126,7 +131,8 @@ def historique_versions(
 def telecharger_version(
     memoire_id: int,
     version_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(RoleChecker(["etudiant", "encadreur", "admin", "jury"]))
 ):
     from app.models.version_memoire import VersionMemoire
     
