@@ -96,9 +96,25 @@ Toutes les fonctionnalités sont exposées via les nouvelles routes dans `app/ap
 - `POST /sujets/analyser` : Prédiction de la probabilité d'approbation d'un thème.
 - `POST /soutenances/generer-planning` : Optimisation automatique des créneaux de soutenance.
 
+---
+
+## 📂 Dépôt & Versionnement des Mémoires (Nouveau)
+
+Ce module gère le cycle de vie physique des documents de mémoire et assure la traçabilité des corrections.
+
+### Fonctionnalités
+- **Incrémentation de Version** : Chaque dépôt crée une nouvelle version (v1, v2...) sans écraser l'historique.
+- **Stockage Sécurisé** : Les PDF sont stockés dans le dossier local `uploads/memoires/`.
+- **Statuts Dynamiques** : Le système bascule automatiquement le mémoire en `en_attente` dès qu'un étudiant soumet une correction.
+
+### 🧪 Tests Automatisés
+Deux scripts ont été ajoutés pour valider l'installation et le fonctionnement :
+1.  **Initialisation** : `python setup_test_db.py` (Crée un utilisateur et un étudiant de test).
+2.  **Scénarios** : `python test_scenarios.py` (Exécute 5 scénarios : dépôt v1, v2, blocage non-PDF, téléchargement).
+
 ⚠️ **Important pour l'équipe** :
-1.  Relancez `pip install -r requirements.txt` pour installer les librairies de Machine Learning.
-2.  Assurez-vous que le dossier `ia_models/` contient bien les fichiers `.pkl` générés.
+1.  Relancez `pip install -r requirements.txt` pour installer les librairies de Machine Learning et de Test.
+2.  Le dossier `uploads/` est ignoré par Git pour ne pas encombrer le dépôt avec des fichiers de test.
 
 ---
 **Bon développement à tous pour la suite du projet !**
