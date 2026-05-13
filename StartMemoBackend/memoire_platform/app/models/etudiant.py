@@ -15,3 +15,4 @@ class Etudiant(Base):
     centres_interet = Column(Text)
 
     user = relationship("User")
+    memoires = relationship("Memoire", back_populates="etudiant")

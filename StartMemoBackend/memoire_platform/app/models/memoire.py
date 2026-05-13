@@ -1,46 +1,50 @@
-import enum
-from sqlalchemy import Column, Integer, String, Float, DateTime, Enum, ForeignKey
+from datetime import datetime
+# app/models/memoire.py
+
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+import enum
 from app.database import Base
 
-class StatutMemoire(str, enum.Enum):
-    en_cours = "en_cours"
-    en_attente = "en_attente"
-    en_correction = "en_correction"
-    valide = "valide"
-    refuse = "refuse"
-    soutenu = "soutenu"
 
-class StatutVersion(str, enum.Enum):
-    en_attente = "en_attente"
+class StatutMemoire(str, enum.Enum):
+    """
+    Les 4 statuts possibles d'un mémoire (en minuscules pour la BDD).
+    """
+    en_attente    = "en_attente"
     en_correction = "en_correction"
-    valide = "valide"
-    refuse = "refuse"
+    valide        = "valide"
+    refuse        = "refuse"
+
 
 class Memoire(Base):
     __tablename__ = "memoires"
 
-    id = Column(Integer, primary_key=True)
-    etudiant_id = Column(Integer, ForeignKey("etudiants.id"), unique=True)
-    sujet_id = Column(Integer, ForeignKey("sujets.id"))
-    encadreur_id = Column(Integer, ForeignKey("encadreurs.id"), nullable=True)
-    titre_final = Column(String(500), nullable=True)
-    statut = Column(Enum(StatutMemoire), default=StatutMemoire.en_cours)
-    score_plagiat = Column(Float, nullable=True)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    id = Column(Integer, primary_key=True, index=True)
+    titre = Column(String(300), nullable=False)
+    description = Column(Text, nullable=True)
+    domaine = Column(String(100), nullable=True)
+    annee_academique = Column(String(10), nullable=True)
 
-class VersionMemoire(Base):
-    __tablename__ = "versions_memoire"
+    statut = Column(
+        Enum(StatutMemoire),
+        default=StatutMemoire.en_attente,
+        nullable=False
+    )
 
-    id = Column(Integer, primary_key=True)
-    memoire_id = Column(Integer, ForeignKey("memoires.id"))
-    numero_version = Column(Integer, nullable=False)
-    chemin_fichier = Column(String(500))
-    nom_fichier = Column(String(255))
-    taille_fichier = Column(Integer)
-    statut = Column(Enum(StatutVersion), default=StatutVersion.en_attente)
-    depose_le = Column(DateTime, default=func.now())
+    etudiant_id = Column(Integer, ForeignKey("etudiants.id"), nullable=False)
+    encadreur_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
-    memoire = relationship("Memoire")
+    cree_le = Column(DateTime(timezone=True), default=datetime.utcnow)
+    mis_a_jour_le = Column(DateTime(timezone=True), onupdate=func.now())
+
+    etudiant = relationship("Etudiant", back_populates="memoires")
+    versions = relationship(
+        "VersionMemoire",
+        back_populates="memoire",
+        order_by="VersionMemoire.numero_version.desc()"
+    )
+
+    def __repr__(self):
+        return f"<Memoire id={self.id} titre='{self.titre}' statut={self.statut}>"

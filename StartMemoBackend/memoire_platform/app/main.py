@@ -7,38 +7,38 @@ from app.services.ia import antiplagiat_service, approval_service, submission_se
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Exécuté au démarrage et à l'arrêt de l'application."""
-    print("🚀 SmartMemo démarre — chargement des modèles IA...")
+    """Ex cut  au d marrage et   l'arr t de l'application."""
+    print("[START] SmartMemo d marre   chargement des mod les IA...")
     
-    # Création des tables DB
+    # Cr ation des tables DB
     Base.metadata.create_all(bind=engine)
     
-    # Pré-chargement des modèles IA (si existants)
+    # Pr -chargement des mod les IA (si existants)
     try:
         antiplagiat_service.charger_modele()
-        print("  ✅ Modèle AntiPlagiat chargé")
+        print("  [OK] Mod le AntiPlagiat charg ")
     except Exception as e:
-        print(f"  ⚠️ AntiPlagiat non chargé: {e}")
+        print(f"  [WARN] AntiPlagiat non charg : {e}")
     
     try:
         approval_service.charger_modele()
-        print("  ✅ Modèle Approval chargé")
+        print("  [OK] Mod le Approval charg ")
     except Exception as e:
-        print(f"  ⚠️ Approval non chargé: {e}")
+        print(f"  [WARN] Approval non charg : {e}")
         
     try:
         submission_service.charger_modele()
-        print("  ✅ Modèle Submission chargé")
+        print("  [OK] Mod le Submission charg ")
     except Exception as e:
-        print(f"  ⚠️ Submission non chargé: {e}")
+        print(f"  [WARN] Submission non charg : {e}")
     
-    print("✅ Initialisation terminée.")
+    print("[OK] Initialisation termin e.")
     yield
-    print("🛑 Arrêt de SmartMemo.")
+    print("  Arr t de SmartMemo.")
 
 app = FastAPI(
     title="SmartMemo API",
-    description="Plateforme intelligente de gestion des mémoires académiques",
+    description="Plateforme intelligente de gestion des m moires acad miques",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -50,7 +50,7 @@ app.include_router(routes_soutenance.router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
-    return {"message": "Plateforme Mémoire IPNET - API SmartMemo", "status": "ok"}
+    return {"message": "Plateforme M moire IPNET - API SmartMemo", "status": "ok"}
 
 @app.get("/health")
 def health_check():
