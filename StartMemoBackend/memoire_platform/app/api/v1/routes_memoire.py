@@ -1,6 +1,6 @@
 # app/api/v1/routes_memoire.py
 
-from fastapi import APIRouter, Depends, File, UploadFile, Form, HTTPException
+from fastapi import APIRouter, Depends, File, UploadFile, Form, HTTPException, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -14,7 +14,9 @@ from app.schemas.memoire_schema import (
     MemoireResume,
     VersionMemoireReponse,
 )
-from app.models.memoire import StatutMemoire
+from app.models.memoire import Memoire, StatutMemoire
+from app.models.commentaire import Commentaire
+from app.models.version_memoire import VersionMemoire as VersionMemoireModel
 import app.services.memoire_service as service
 from app.services.ia.antiplagiat_service import analyser_plagiat
 from app.services.ia.submission_service import predire_readiness
@@ -186,3 +188,168 @@ async def check_readiness(memoire_id: int, stats: SubmissionStats):
         stats.nb_corrections_faites
     )
     return {"memoire_id": memoire_id, "prediction": resultat}
+
+
+# ══════════════════════════════════════════════
+#  ACTIONS DE VALIDATION (Encadreur)
+# ══════════════════════════════════════════════
+
+class ValiderCorps(BaseModel):
+    commentaire: Optional[str] = None
+
+
+class CommenterCorps(BaseModel):
+    contenu: str
+    section: Optional[str] = None
+    version_id: Optional[int] = None
+
+
+class RejeterCorps(BaseModel):
+    motif: str
+    type_rejet: str  # "refuse" | "en_correction"
+
+
+def _get_memoire_encadreur(memoire_id: int, encadreur_user_id, db: Session) -> Memoire:
+    memoire = db.query(Memoire).filter(Memoire.id == memoire_id).first()
+    if not memoire:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Mémoire introuvable.")
+    if memoire.encadreur_id != encadreur_user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Vous n'êtes pas l'encadreur de ce mémoire.")
+    return memoire
+
+
+@router.post(
+    "/{memoire_id}/valider",
+    summary="Valider un mémoire (encadreur)",
+    description="L'encadreur valide le mémoire et peut laisser un commentaire de validation.",
+    tags=["Actions encadreur"],
+)
+def valider_memoire(
+    memoire_id: int,
+    corps: ValiderCorps,
+    current_user: User = Depends(RoleChecker(["encadreur"])),
+    db: Session = Depends(get_db),
+):
+    memoire = _get_memoire_encadreur(memoire_id, current_user.id, db)
+
+    if memoire.statut == StatutMemoire.valide:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Le mémoire est déjà validé.")
+
+    memoire.statut = StatutMemoire.valide
+    db.add(memoire)
+
+    if corps.commentaire:
+        derniere_version = memoire.versions[0] if memoire.versions else None
+        commentaire = Commentaire(
+            version_id=derniere_version.id if derniere_version else None,
+            auteur_id=current_user.id,
+            contenu=corps.commentaire,
+            section="validation",
+            type="validation",
+        )
+        db.add(commentaire)
+
+    db.commit()
+    db.refresh(memoire)
+
+    return {
+        "memoire_id": memoire.id,
+        "statut":     memoire.statut.value,
+        "message":    "Mémoire validé avec succès.",
+    }
+
+
+@router.post(
+    "/{memoire_id}/commenter",
+    status_code=status.HTTP_201_CREATED,
+    summary="Commenter une version (encadreur)",
+    description="L'encadreur ajoute des retours sur une version sans changer le statut du mémoire.",
+    tags=["Actions encadreur"],
+)
+def commenter_memoire(
+    memoire_id: int,
+    corps: CommenterCorps,
+    current_user: User = Depends(RoleChecker(["encadreur"])),
+    db: Session = Depends(get_db),
+):
+    memoire = _get_memoire_encadreur(memoire_id, current_user.id, db)
+
+    # Résoudre la version cible
+    version_id = corps.version_id
+    if version_id is None and memoire.versions:
+        version_id = memoire.versions[0].id
+
+    if version_id:
+        version_existe = db.query(VersionMemoireModel).filter(
+            VersionMemoireModel.id == version_id,
+            VersionMemoireModel.memoire_id == memoire_id,
+        ).first()
+        if not version_existe:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Version introuvable.")
+
+    commentaire = Commentaire(
+        version_id=version_id,
+        auteur_id=current_user.id,
+        contenu=corps.contenu,
+        section=corps.section,
+        type="commentaire",
+    )
+    db.add(commentaire)
+    db.commit()
+    db.refresh(commentaire)
+
+    return {
+        "id":         commentaire.id,
+        "memoire_id": memoire_id,
+        "version_id": commentaire.version_id,
+        "contenu":    commentaire.contenu,
+        "section":    commentaire.section,
+        "cree_le":    commentaire.created_at.isoformat() if commentaire.created_at else None,
+    }
+
+
+@router.post(
+    "/{memoire_id}/rejeter",
+    summary="Rejeter un mémoire (encadreur)",
+    description="L'encadreur rejette ou demande des corrections. Le motif est obligatoire.",
+    tags=["Actions encadreur"],
+)
+def rejeter_memoire(
+    memoire_id: int,
+    corps: RejeterCorps,
+    current_user: User = Depends(RoleChecker(["encadreur"])),
+    db: Session = Depends(get_db),
+):
+    if not corps.motif or not corps.motif.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Le motif est obligatoire.")
+
+    if corps.type_rejet not in ("refuse", "en_correction"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="type_rejet doit être 'refuse' ou 'en_correction'.")
+
+    memoire = _get_memoire_encadreur(memoire_id, current_user.id, db)
+
+    if memoire.statut == StatutMemoire.valide:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Impossible de rejeter un mémoire déjà validé.")
+
+    nouveau_statut = StatutMemoire.refuse if corps.type_rejet == "refuse" else StatutMemoire.en_correction
+    memoire.statut = nouveau_statut
+    db.add(memoire)
+
+    derniere_version = memoire.versions[0] if memoire.versions else None
+    commentaire = Commentaire(
+        version_id=derniere_version.id if derniere_version else None,
+        auteur_id=current_user.id,
+        contenu=corps.motif,
+        section="rejet",
+        type="rejet",
+    )
+    db.add(commentaire)
+    db.commit()
+    db.refresh(memoire)
+
+    return {
+        "memoire_id": memoire.id,
+        "statut":     memoire.statut.value,
+        "motif":      corps.motif,
+        "message":    "Décision enregistrée.",
+    }
