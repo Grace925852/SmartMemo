@@ -1,0 +1,17 @@
+{
+  "nom_modele": "Random Forest",
+  "accuracy": 85.83,
+  "f1_score": 84.92,
+  "cv_mean": 86.04,
+  "cv_std": 2.43,
+  "nb_features": 30,
+  "nb_classes": 3,
+  "classes": [
+    "APPROUVE",
+    "REJETE",
+    "REVISION_NECESSAIRE"
+  ],
+  "nb_train": 480,
+  "nb_test": 120,
+  "seuil_rejet_similarite": 0.8
+}

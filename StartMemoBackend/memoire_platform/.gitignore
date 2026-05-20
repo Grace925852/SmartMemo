@@ -20,3 +20,8 @@ __pycache__/
 # Fichiers de configuration / instructions locales
 PANA_Elissam_Leroy_Instructions_Jour1.md
 ../PANA_Elissam_Leroy_Instructions_Jour1.md
+
+# Exclus du dépôt
+../ENDPOINTS_MANQUANTS_LEROY.md
+../docs/
+tests/

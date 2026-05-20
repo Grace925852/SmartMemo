@@ -1,0 +1,33 @@
+{
+  "nom_modele": "Random Forest",
+  "accuracy": 81.43,
+  "f1_score": 81.26,
+  "cv_f1": 81.84,
+  "cv_std": 3.34,
+  "classes": [
+    "ORIGINAL",
+    "PLAGIAT_PARTIEL",
+    "PLAGIAT_TOTAL",
+    "SIMILAIRE"
+  ],
+  "seuils": {
+    "ORIGINAL": [
+      0.0,
+      0.25
+    ],
+    "SIMILAIRE": [
+      0.25,
+      0.5
+    ],
+    "PLAGIAT_PARTIEL": [
+      0.5,
+      0.8
+    ],
+    "PLAGIAT_TOTAL": [
+      0.8,
+      1.0
+    ]
+  },
+  "seuil_alerte": 0.5,
+  "seuil_rejet": 0.8
+}

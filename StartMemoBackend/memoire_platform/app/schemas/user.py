@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict, EmailStr
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 from app.models.user import RoleEnum
 
 class UserBase(BaseModel):
@@ -14,7 +15,7 @@ class UserCreate(UserBase):
     password: str
 
 class UserOut(UserBase):
-    id: int
+    id: UUID
     is_active: bool
     created_at: datetime
 

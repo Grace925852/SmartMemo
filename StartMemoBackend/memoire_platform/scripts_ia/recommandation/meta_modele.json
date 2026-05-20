@@ -1,0 +1,21 @@
+{
+  "nom_modele": "SVM",
+  "accuracy": 76.0,
+  "f1_score": 73.92,
+  "cv_mean": 71.75,
+  "cv_std": 3.67,
+  "nb_features": 112,
+  "nb_classes": 8,
+  "classes": [
+    "Bases de données",
+    "Cloud / DevOps",
+    "Cybersécurité",
+    "Développement Web",
+    "IA / Machine Learning",
+    "Mobile",
+    "Réseaux",
+    "Systèmes"
+  ],
+  "nb_train": 400,
+  "nb_test": 100
+}

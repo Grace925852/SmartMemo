@@ -1,0 +1,15 @@
+{
+  "regresseur": {
+    "nom": "Random Forest Regressor",
+    "mae": 1.52,
+    "r2": 0.9892,
+    "cv_r2": 0.9874
+  },
+  "classifieur": {
+    "nom": "Random Forest Classifier",
+    "accuracy": 99.16,
+    "f1": 99.16,
+    "cv_acc": 99.06
+  },
+  "seuil_compatibilite": 50.0
+}
