@@ -2,7 +2,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.database import Base, engine
 import app.models
-from app.api.v1 import routes_memoire, routes_sujet, routes_soutenance, routes_auth, routes_encadreur
+from app.api.v1 import (
+    routes_memoire,
+    routes_sujet,
+    routes_soutenance,
+    routes_auth,
+    routes_encadreur,
+    routes_admin,
+    routes_jury,
+    routes_archive,
+)
 from app.services.ia import antiplagiat_service, approval_service, submission_service
 
 @asynccontextmanager
@@ -49,6 +58,9 @@ app.include_router(routes_memoire.router, prefix="/api/v1")
 app.include_router(routes_sujet.router, prefix="/api/v1")
 app.include_router(routes_soutenance.router, prefix="/api/v1")
 app.include_router(routes_encadreur.router, prefix="/api/v1")
+app.include_router(routes_admin.router, prefix="/api/v1")
+app.include_router(routes_jury.router, prefix="/api/v1")
+app.include_router(routes_archive.router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
