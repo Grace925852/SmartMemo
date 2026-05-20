@@ -13,6 +13,7 @@ class Commentaire(Base):
     auteur_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     contenu = Column(Text, nullable=False)
     section = Column(String(100), nullable=True)
+    type = Column(String(50), nullable=True)  # "validation", "rejet", "commentaire"
     created_at = Column(DateTime, default=func.now())
 
     version = relationship("VersionMemoire")

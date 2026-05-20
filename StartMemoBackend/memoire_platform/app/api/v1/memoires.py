@@ -3,7 +3,14 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.memoire import StatutMemoire, StatutVersion
+import enum
+from app.models.memoire import StatutMemoire
+
+class StatutVersion(str, enum.Enum):
+    en_attente    = "en_attente"
+    en_correction = "en_correction"
+    valide        = "valide"
+    refuse        = "refuse"
 
 
 class MemoireCreate(BaseModel):
